@@ -1,4 +1,4 @@
-# Pinned Clawdis source (mirrors nixos-config)
+# Pinned Clawdis source for nix-clawdis
 {
   owner = "steipete";
   repo = "clawdis";

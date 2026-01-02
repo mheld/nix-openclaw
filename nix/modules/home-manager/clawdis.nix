@@ -97,7 +97,6 @@ in {
         type = lib.types.attrs;
         default = {
           telegram = "interrupt";
-          whatsapp = "interrupt";
           discord = "queue";
           webchat = "queue";
         };
