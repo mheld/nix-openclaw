@@ -22,17 +22,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Nix (single-user)
+      - name: Install Nix
         shell: bash
         run: |
           set -euo pipefail
           curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm --nix-build-user-count 1
-          if [ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
-            . "$HOME/.nix-profile/etc/profile.d/nix.sh"
-          else
-            echo "Nix profile not found" >&2
-            exit 1
-          fi
+          . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix --version
 
       - name: Resolve upstream version
@@ -49,7 +44,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+          . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix build .#packages.aarch64-linux.clawdbot-docker
 
       - name: Load image
