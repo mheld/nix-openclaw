@@ -18,7 +18,7 @@ link_agent() {
   if [ -n "$hm_gen_path" ] && [ -e "$hm_gen_path/LaunchAgents/${label}.plist" ]; then
     candidate="$hm_gen_path/LaunchAgents/${label}.plist"
   else
-    candidate="$(/bin/ls -t "/nix/store/*${label}.plist" 2>/dev/null | /usr/bin/head -n 1)"
+    candidate="$(/bin/ls -t /nix/store/*${label}.plist 2>/dev/null | /usr/bin/head -n 1 || true)"
   fi
 
   if [ -z "$candidate" ]; then
