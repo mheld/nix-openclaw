@@ -1,5 +1,5 @@
 {
-  description = "nix-clawdbot: declarative Clawdbot packaging for macOS";
+  description = "nix-clawdbot: declarative Clawdbot packaging";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -35,7 +35,7 @@
           clawdbot = flake-utils.lib.mkApp { drv = pkgs.clawdbot-gateway; };
         };
 
-        checks = pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+        checks = {
           gateway = pkgs.clawdbot-gateway;
         };
 

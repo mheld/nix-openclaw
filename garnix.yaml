@@ -1,3 +1,4 @@
 builds:
   include:
-    - "checks.aarch64-darwin.*"
+    - "packages.*"
+    - "checks.*"

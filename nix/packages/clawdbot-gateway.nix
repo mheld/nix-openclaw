@@ -7,12 +7,18 @@
 , python3
 , makeWrapper
 , vips
+, zstd
 , sourceInfo
 , gatewaySrc ? null
 , pnpmDepsHash ? null
 }:
 
 assert gatewaySrc == null || pnpmDepsHash != null;
+
+let
+  pnpmPlatform = if stdenv.hostPlatform.isDarwin then "darwin" else "linux";
+  pnpmArch = if stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
+in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "clawdbot-gateway";
@@ -31,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     nodejs_22
     pnpm_10
-    pnpm_10.configHook
     pkg-config
     python3
     makeWrapper
+    zstd
   ];
 
   buildInputs = [ vips ];
@@ -42,11 +48,32 @@ stdenv.mkDerivation (finalAttrs: {
   env = {
     SHARP_FORCE_GLOBAL_LIBVIPS = "1";
     npm_config_build_from_source = "true";
+    npm_config_arch = pnpmArch;
+    npm_config_platform = pnpmPlatform;
+    PNPM_CONFIG_MANAGE_PACKAGE_MANAGER_VERSIONS = "false";
   };
+
+  preBuild = ''
+    export HOME=$(mktemp -d)
+    export STORE_PATH=$(mktemp -d)
+
+    fetcherVersion=$(cat "${finalAttrs.pnpmDeps}/.fetcher-version" || echo 1)
+    if [ "$fetcherVersion" -ge 3 ]; then
+      tar --zstd -xf "${finalAttrs.pnpmDeps}/pnpm-store.tar.zst" -C "$STORE_PATH"
+    else
+      cp -Tr "${finalAttrs.pnpmDeps}" "$STORE_PATH"
+    fi
+
+    chmod -R +w "$STORE_PATH"
+
+    pnpm config set store-dir "$STORE_PATH"
+    pnpm config set package-import-method clone-or-copy
+  '';
 
   buildPhase = ''
     runHook preBuild
     pnpm install --offline --frozen-lockfile
+    patchShebangs node_modules/{*,.*}
     pnpm build
     pnpm ui:build
     runHook postBuild
