@@ -3,11 +3,13 @@
 let
   cfg = config.programs.clawdbot;
   homeDir = config.home.homeDirectory;
+  autoExcludeTools = lib.optionals config.programs.git.enable [ "git" ];
+  effectiveExcludeTools = lib.unique (cfg.excludeTools ++ autoExcludeTools);
   toolOverrides = {
     toolNamesOverride = cfg.toolNames;
-    excludeToolNames = cfg.excludeTools;
+    excludeToolNames = effectiveExcludeTools;
   };
-  toolOverridesEnabled = cfg.toolNames != null || cfg.excludeTools != [];
+  toolOverridesEnabled = cfg.toolNames != null || effectiveExcludeTools != [];
   toolSets = import ../../tools/extended.nix ({ inherit pkgs; } // toolOverrides);
   defaultPackage =
     if toolOverridesEnabled && cfg.package == pkgs.clawdbot

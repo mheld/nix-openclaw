@@ -595,6 +595,8 @@ Plugins are keyed by their declared `name`. If two plugins declare the same name
 
 ### Tool overrides (avoid collisions)
 
+Home Manager auto-excludes `git` when `programs.git.enable = true`.
+
 Drop built-in tools that you already install elsewhere:
 
 ```nix
