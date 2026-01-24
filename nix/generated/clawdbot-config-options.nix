@@ -3879,6 +3879,16 @@ in
       allowCommands = lib.mkOption {
         type = t.listOf (t.str);
       };
+      browser = lib.mkOption {
+        type = t.submodule { options = {
+        mode = lib.mkOption {
+          type = t.oneOf [ t.enum [ "auto" ] t.enum [ "manual" ] t.enum [ "off" ] ];
+        };
+        node = lib.mkOption {
+          type = t.str;
+        };
+      }; };
+      };
       denyCommands = lib.mkOption {
         type = t.listOf (t.str);
       };
@@ -4402,6 +4412,21 @@ in
       }; });
       };
     }; });
+    };
+  }; };
+  };
+
+  nodeHost = lib.mkOption {
+    type = t.submodule { options = {
+    browserProxy = lib.mkOption {
+      type = t.submodule { options = {
+      allowProfiles = lib.mkOption {
+        type = t.listOf (t.str);
+      };
+      enabled = lib.mkOption {
+        type = t.bool;
+      };
+    }; };
     };
   }; };
   };
