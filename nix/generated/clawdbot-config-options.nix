@@ -4514,6 +4514,13 @@ in
 
   discovery = lib.mkOption {
     type = t.submodule { options = {
+    mdns = lib.mkOption {
+      type = t.submodule { options = {
+      mode = lib.mkOption {
+        type = t.enum [ "off" "minimal" "full" ];
+      };
+    }; };
+    };
     wideArea = lib.mkOption {
       type = t.submodule { options = {
       enabled = lib.mkOption {
@@ -4761,6 +4768,9 @@ in
       account = lib.mkOption {
         type = t.str;
       };
+      allowUnsafeExternalContent = lib.mkOption {
+        type = t.bool;
+      };
       hookUrl = lib.mkOption {
         type = t.str;
       };
@@ -4885,6 +4895,9 @@ in
       type = t.listOf (t.submodule { options = {
       action = lib.mkOption {
         type = t.oneOf [ t.enum [ "wake" ] t.enum [ "agent" ] ];
+      };
+      allowUnsafeExternalContent = lib.mkOption {
+        type = t.bool;
       };
       channel = lib.mkOption {
         type = t.oneOf [ t.enum [ "last" ] t.enum [ "whatsapp" ] t.enum [ "telegram" ] t.enum [ "discord" ] t.enum [ "slack" ] t.enum [ "signal" ] t.enum [ "imessage" ] t.enum [ "msteams" ] ];
