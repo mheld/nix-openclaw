@@ -48,9 +48,13 @@ if not node_bin:
 openclaw_root = os.path.dirname(os.path.dirname(openclaw_bin_real))
 openclaw_lib = os.path.join(openclaw_root, "lib", "openclaw")
 openclaw_node_modules = os.path.join(openclaw_lib, "node_modules")
-probe_env = (
-    f"{user_env} NODE_PATH={openclaw_node_modules} CLIPBOARD_MODULE=@mariozechner/clipboard"
-)
+probe_env = f"{user_env} NODE_PATH={openclaw_node_modules}"
+
+pi_pkg = machine.succeed(
+    f"su - alice -c '{probe_env} {node_bin} -e \"console.log(require.resolve('@mariozechner/pi-coding-agent/package.json'))\"'"
+).strip()
+if not pi_pkg:
+    raise Exception("failed to resolve pi-coding-agent package.json")
 
 
 def run_probe(label, command):
@@ -60,8 +64,13 @@ def run_probe(label, command):
         machine.succeed(f"echo 'fail-fast probe: {label}'")
         machine.succeed(f"echo 'openclaw_bin: {openclaw_bin}'")
         machine.succeed(f"echo 'openclaw_bin_real: {openclaw_bin_real}'")
+        machine.succeed(f"echo 'pi_pkg: {pi_pkg}'")
         machine.succeed(f"ls -la {openclaw_lib} || true")
         machine.succeed(f"ls -la {openclaw_node_modules}/@mariozechner || true")
+        machine.succeed(
+            "command -v find >/dev/null && "
+            f"find {openclaw_node_modules}/.pnpm -maxdepth 6 -path '*@mariozechner+clipboard*' -print || true"
+        )
         machine.succeed(
             "command -v find >/dev/null && "
             f"find {openclaw_node_modules} -maxdepth 5 -name 'clipboard*.node' -print || true"
@@ -72,18 +81,18 @@ def run_probe(label, command):
             "-exec sh -c 'echo --- $1; ldd \"$1\" || true' _ {} \\; || true"
         )
         machine.succeed(
-            f"su - alice -c '{probe_env} {node_bin} -e \"console.log(require.resolve(process.env.CLIPBOARD_MODULE))\"' || true"
+            f"su - alice -c '{probe_env} PI_PKG={pi_pkg} {node_bin} -e \"const createRequire=require('module').createRequire; const req=createRequire(process.env.PI_PKG); console.log(req.resolve('@mariozechner/clipboard'));\"' || true"
         )
         raise
 
 
 run_probe(
     "require-clipboard",
-    f"su - alice -c '{probe_env} {node_bin} -e \"require(process.env.CLIPBOARD_MODULE)\"'",
+    f"su - alice -c '{probe_env} PI_PKG={pi_pkg} {node_bin} -e \"const createRequire=require('module').createRequire; const req=createRequire(process.env.PI_PKG); console.log(req.resolve('@mariozechner/clipboard')); req('@mariozechner/clipboard');\"'",
 )
 run_probe(
     "clipboard-hasText",
-    f"su - alice -c '{probe_env} {node_bin} -e \"const c=require(process.env.CLIPBOARD_MODULE); console.log(c.hasText())\"'",
+    f"su - alice -c '{probe_env} PI_PKG={pi_pkg} {node_bin} -e \"const createRequire=require('module').createRequire; const req=createRequire(process.env.PI_PKG); const c=req('@mariozechner/clipboard'); console.log(c.hasText());\"'",
 )
 
 machine.succeed(f"su - alice -c '{user_env} systemctl --user start openclaw-gateway.service'")
