@@ -33,6 +33,10 @@
               instances.default = {
                 gatewayPort = 18999;
                 config = {
+                  logging = {
+                    level = "debug";
+                    file = "/tmp/openclaw/openclaw-gateway.log";
+                  };
                   gateway = {
                     mode = "local";
                     auth = {

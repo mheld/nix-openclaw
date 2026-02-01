@@ -25,4 +25,6 @@ except Exception:
         "journalctl --user -u openclaw-gateway.service --no-pager -n 200 || true"
     )
     machine.succeed("tail -n 200 /tmp/openclaw/openclaw-gateway.log || true")
+    machine.succeed("tail -n 200 /tmp/openclaw/openclaw.log || true")
+    machine.succeed("coredumpctl info --no-pager | tail -n 200 || true")
     raise
