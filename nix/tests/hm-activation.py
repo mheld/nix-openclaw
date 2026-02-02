@@ -13,6 +13,9 @@ machine.wait_for_unit(f"user@{uid}.service")
 
 machine.wait_until_succeeds("test -S /run/user/1000/bus")
 
+machine.succeed("mkdir -p /tmp/openclaw")
+machine.succeed("chmod 1777 /tmp/openclaw")
+
 user_env = "XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
 machine.succeed(f"su - alice -c '{user_env} systemctl --user daemon-reload'")
 machine.succeed(f"su - alice -c '{user_env} systemctl --user start openclaw-gateway.service'")
