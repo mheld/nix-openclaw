@@ -208,25 +208,26 @@ in {
       ++ (lib.optionals cfg.exposePluginPackages plugins.pluginPackagesAll)
     );
 
-    home.file =
+    home.file = lib.mkMerge [
       (lib.listToAttrs (map (item: item.homeFile) instanceConfigs))
-      // (lib.optionalAttrs (pkgs.stdenv.hostPlatform.isDarwin && appPackage != null && cfg.installApp) {
+      (lib.optionalAttrs (pkgs.stdenv.hostPlatform.isDarwin && appPackage != null && cfg.installApp) {
         "Applications/Openclaw.app" = {
           source = "${appPackage}/Applications/Openclaw.app";
           recursive = true;
           force = true;
         };
       })
-      // (lib.listToAttrs appInstalls)
-      // files.documentsFiles
-      // files.skillFiles
-      // plugins.pluginConfigFiles
-      // (lib.optionalAttrs cfg.reloadScript.enable {
+      (lib.listToAttrs appInstalls)
+      files.documentsFiles
+      files.skillFiles
+      plugins.pluginConfigFiles
+      (lib.optionalAttrs cfg.reloadScript.enable {
         ".local/bin/openclaw-reload" = {
           executable = true;
           source = ../openclaw-reload.sh;
         };
-      });
+      })
+    ];
 
     home.activation.openclawDocumentGuard = lib.mkIf files.documentsEnabled (
       lib.hm.dag.entryBefore [ "writeBoundary" ] ''
