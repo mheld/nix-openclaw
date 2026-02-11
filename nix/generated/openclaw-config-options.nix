@@ -7290,6 +7290,10 @@ in
 
   hooks = lib.mkOption {
     type = t.nullOr (t.submodule { options = {
+    allowedAgentIds = lib.mkOption {
+      type = t.nullOr (t.listOf (t.str));
+      default = null;
+    };
     enabled = lib.mkOption {
       type = t.nullOr (t.bool);
       default = null;
@@ -7463,6 +7467,10 @@ in
       type = t.nullOr (t.listOf (t.submodule { options = {
       action = lib.mkOption {
         type = t.nullOr (t.oneOf [ (t.enum [ "wake" ]) (t.enum [ "agent" ]) ]);
+        default = null;
+      };
+      agentId = lib.mkOption {
+        type = t.nullOr (t.str);
         default = null;
       };
       allowUnsafeExternalContent = lib.mkOption {
