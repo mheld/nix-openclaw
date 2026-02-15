@@ -1,6 +1,22 @@
 #!/bin/sh
 set -e
 
+log_step() {
+  if [ "${OPENCLAW_NIX_TIMINGS:-1}" != "1" ]; then
+    "$@"
+    return
+  fi
+
+  name="$1"
+  shift
+
+  start=$(date +%s)
+  printf '>> [timing] %s...\n' "$name" >&2
+  "$@"
+  end=$(date +%s)
+  printf '>> [timing] %s: %ss\n' "$name" "$((end - start))" >&2
+}
+
 if [ -z "${GATEWAY_PREBUILD_SH:-}" ]; then
   echo "GATEWAY_PREBUILD_SH is not set" >&2
   exit 1
@@ -19,7 +35,8 @@ export NPM_CONFIG_STORE_DIR="$store_path"
 export NPM_CONFIG_STORE_PATH="$store_path"
 export HOME="$(mktemp -d)"
 
-pnpm install --offline --frozen-lockfile --ignore-scripts --store-dir "$store_path"
+log_step "pnpm install (tests/config)" pnpm install --offline --frozen-lockfile --ignore-scripts --store-dir "$store_path"
+
 if [ -z "${STDENV_SETUP:-}" ]; then
   echo "STDENV_SETUP is not set" >&2
   exit 1
@@ -28,4 +45,5 @@ if [ ! -f "$STDENV_SETUP" ]; then
   echo "STDENV_SETUP not found: $STDENV_SETUP" >&2
   exit 1
 fi
-bash -e -c ". \"$STDENV_SETUP\"; patchShebangs node_modules/.bin"
+
+log_step "patchShebangs node_modules/.bin" bash -e -c ". \"$STDENV_SETUP\"; patchShebangs node_modules/.bin"

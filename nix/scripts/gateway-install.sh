@@ -1,15 +1,32 @@
 #!/bin/sh
 set -e
+
+log_step() {
+  if [ "${OPENCLAW_NIX_TIMINGS:-1}" != "1" ]; then
+    "$@"
+    return
+  fi
+
+  name="$1"
+  shift
+
+  start=$(date +%s)
+  printf '>> [timing] %s...\n' "$name" >&2
+  "$@"
+  end=$(date +%s)
+  printf '>> [timing] %s: %ss\n' "$name" "$((end - start))" >&2
+}
+
 mkdir -p "$out/lib/openclaw" "$out/bin"
 
-cp -r dist node_modules package.json ui "$out/lib/openclaw/"
+log_step "copy build outputs" cp -r dist node_modules package.json "$out/lib/openclaw/"
 if [ -d extensions ]; then
-  cp -r extensions "$out/lib/openclaw/"
+  log_step "copy extensions" cp -r extensions "$out/lib/openclaw/"
 fi
 
 if [ -d docs/reference/templates ]; then
   mkdir -p "$out/lib/openclaw/docs/reference"
-  cp -r docs/reference/templates "$out/lib/openclaw/docs/reference/"
+  log_step "copy reference templates" cp -r docs/reference/templates "$out/lib/openclaw/docs/reference/"
 fi
 
 if [ -z "${STDENV_SETUP:-}" ]; then
@@ -21,10 +38,7 @@ if [ ! -f "$STDENV_SETUP" ]; then
   exit 1
 fi
 
-bash -e -c '. "$STDENV_SETUP"; patchShebangs "$out/lib/openclaw/node_modules/.bin"'
-if [ -d "$out/lib/openclaw/ui/node_modules/.bin" ]; then
-  bash -e -c '. "$STDENV_SETUP"; patchShebangs "$out/lib/openclaw/ui/node_modules/.bin"'
-fi
+log_step "patchShebangs node_modules/.bin" bash -e -c '. "$STDENV_SETUP"; patchShebangs "$out/lib/openclaw/node_modules/.bin"'
 
 # Work around missing dependency declaration in pi-coding-agent (strip-ansi).
 # Ensure it is resolvable at runtime without changing upstream.
