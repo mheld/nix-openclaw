@@ -42,6 +42,7 @@ let
         pname = "openclaw-gateway-tests";
         sourceInfo = sourceInfo;
         pnpmDepsHash = pnpmDepsHash;
+        pnpmDepsPname = "openclaw-gateway";
         enableSharp = true;
         extraNativeBuildInputs = [ bun ];
         extraBuildInputs = [ vips ];

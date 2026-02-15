@@ -30,8 +30,23 @@ export HOME="$(mktemp -d)"
 pnpm install --offline --frozen-lockfile --ignore-scripts --store-dir "$store_path"
 chmod -R u+w node_modules
 rm -rf node_modules/.pnpm/sharp@*/node_modules/sharp/src/build
+# Rebuild only native deps (avoid `pnpm rebuild` over the entire workspace).
 # node-llama-cpp postinstall attempts to download/compile llama.cpp (network blocked in Nix).
-NODE_LLAMA_CPP_SKIP_DOWNLOAD=1 pnpm rebuild
+# Also defensively disable other common downloaders.
+rebuild_list="$(jq -r '.pnpm.onlyBuiltDependencies // [] | .[]' package.json 2>/dev/null || true)"
+if [ -n "$rebuild_list" ]; then
+  NODE_LLAMA_CPP_SKIP_DOWNLOAD=1 \
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+  PUPPETEER_SKIP_DOWNLOAD=1 \
+  ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
+  pnpm rebuild $rebuild_list
+else
+  NODE_LLAMA_CPP_SKIP_DOWNLOAD=1 \
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+  PUPPETEER_SKIP_DOWNLOAD=1 \
+  ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
+  pnpm rebuild
+fi
 bash -e -c ". \"$STDENV_SETUP\"; patchShebangs node_modules/.bin"
 pnpm build
 pnpm ui:build

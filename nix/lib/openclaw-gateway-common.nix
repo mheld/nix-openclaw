@@ -24,6 +24,7 @@
   pname,
   sourceInfo,
   pnpmDepsHash ? (sourceInfo.pnpmDepsHash or null),
+  pnpmDepsPname ? "openclaw-gateway",
   gatewaySrc ? null,
   src ? null,
   enableSharp ? false,
@@ -53,11 +54,12 @@ let
   nodeAddonApi = import ../packages/node-addon-api.nix { inherit stdenv fetchurl; };
 
   pnpmDeps = fetchPnpmDeps {
-    inherit pname version;
+    pname = pnpmDepsPname;
+    inherit version;
     src = resolvedSrc;
     pnpm = pnpm_10;
     hash = if pnpmDepsHash != null then pnpmDepsHash else lib.fakeHash;
-    fetcherVersion = 2;
+    fetcherVersion = 3;
     npm_config_arch = pnpmArch;
     npm_config_platform = pnpmPlatform;
     nativeBuildInputs = [ git ];

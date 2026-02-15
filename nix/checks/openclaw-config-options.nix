@@ -132,6 +132,7 @@ let
         pname = "openclaw-config-options";
         sourceInfo = sourceInfo;
         pnpmDepsHash = pnpmDepsHash;
+        pnpmDepsPname = "openclaw-gateway";
       };
 
 in
