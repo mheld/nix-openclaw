@@ -24,6 +24,10 @@ if [ -d extensions ]; then
   log_step "copy extensions" cp -r extensions "$out/lib/openclaw/"
 fi
 
+if [ -d skills ]; then
+  log_step "copy skills" cp -r skills "$out/lib/openclaw/"
+fi
+
 if [ -d docs/reference/templates ]; then
   mkdir -p "$out/lib/openclaw/docs/reference"
   log_step "copy reference templates" cp -r docs/reference/templates "$out/lib/openclaw/docs/reference/"
